@@ -1,2 +1,4 @@
 # cnn_vti_inversion
 Determination of the elastic parameters of a VTI medium from sonic logging data using deep learning
+
+When a software component is an essential part of the paper presentation, authors should be prepared to make it available to reviewers during the review process. Software/scripts used or developed for the substantial part of the presented work must be open-source and freely available for download from a stable public repository (git repositories are encouraged). Please avoid i) inserting the code source directly in the manuscript, and ii) personal file-sharing services. The repository link should be included in the "Computer Code Availability" section, the download should be anonymous. Free open-source code for proprietary platforms (e.g. matlab or GIS plugins) are accepted and must be shared in the public repository.
