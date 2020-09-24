@@ -39,4 +39,4 @@ The script is used for the list construction for the inputs and outputs for the 
 ```
 make_plot.ipynb
 ```
-The script can be used to visualize shot gathers from Dataset4000 folder.
+The script can be used to visualize shot gathers from dataset10 folder.
