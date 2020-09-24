@@ -1,7 +1,22 @@
 # cnn_vti_inversion
 Determination of the elastic parameters of a VTI medium from sonic logging data using deep learning
 
-When a software component is an essential part of the paper presentation, authors should be prepared to make it available to reviewers during the review process. Software/scripts used or developed for the substantial part of the presented work must be open-source and freely available for download from a stable public repository (git repositories are encouraged). Please avoid i) inserting the code source directly in the manuscript, and ii) personal file-sharing services. The repository link should be included in the "Computer Code Availability" section, the download should be anonymous. Free open-source code for proprietary platforms (e.g. matlab or GIS plugins) are accepted and must be shared in the public repository.
+Dataset400
+The folder contains 400 shot gather. This data can not be used for a proper neural network training but can be used for the testing. 
+dataset_log_file_TD.txt - text file that contains parameters of the medium related to the shot gathers
+```
+main_train.ipynb
+```
+Script is devoted to the neural network construction and training.  
+
+main_test.ipynb
+Script is devoted to the neural network testing.  
+
+make_plot.ipynb
+Script can be used to visualize shot gathers from Dataset4000 folder.
+
+form_lists.py
+The script is used for the list construction the inputs and outputs for the neural netowrk. 
 
 Computer code should provide the following information:
 
