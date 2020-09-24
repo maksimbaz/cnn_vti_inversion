@@ -3,9 +3,11 @@ Determination of the elastic parameters of a VTI medium from sonic logging data 
 
 ************************
 Maksim Bazulin (maksim.bazulin@skoltech.ru), Denis Sabitov, Marwan Charara
+
 Codes prepared for Computers and Geosciences journal
 ************************
 
+## Description
 
 ```
 dataset10
