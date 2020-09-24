@@ -13,7 +13,11 @@ Codes prepared for Computers and Geosciences journal
 dataset10
 ```
 The folder contains 10 shot gather. This data can not be used for a proper neural network training but can be used for the testing. 
-dataset_log_file_TD.txt - text file that contains parameters of the medium related to the shot gathers, where columns denotes respectevly:
+
+```
+dataset10/dataset_log_file_TD.txt
+```
+text file that contains parameters of the medium related to the shot gathers, where columns denotes respectevly:
 file_number rho vp vs eps gamma delta
 
 ```
