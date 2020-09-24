@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import os
 
-dataset_directory = './dataset400/'
+dataset_directory = './dataset10/'
 
 # create x(train) and y(teacher) dataset list
 def create_XY_lists(dataset_ditectory, log_file_name, num_of_samples_to_read):
