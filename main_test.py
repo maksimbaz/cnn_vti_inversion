@@ -42,8 +42,7 @@ def read_x_data(list_dataset_filepaths):
     seismogram = np.zeros((len(list_dataset_filepaths), num_of_rec_in_group, mean_timestep))
 #     amp_map = np.zeros((num_of_rec_in_group, mean_timestep)) # amplitude map (moving average) fot noise adding
 #     N = 220 # width of the window usded for the amplitude map calculation
-#     gain = np.exp(-4e5*time_full[:]**2)*1e2/(epoch_number+1)+1
-    gain = np.exp(-4e5*time_full[:]**2)*5e1
+    gain = np.exp(-4e5*time_full[:]**2)*1e2/(epoch_number+1)+1
     gain /= max_seism_value
     for ifile, file_path in enumerate(list_dataset_filepaths):
         filename_r = file_path
