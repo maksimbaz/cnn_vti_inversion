@@ -2,10 +2,11 @@
 Determination of the elastic parameters of a VTI medium from sonic logging data using deep learning
 
 ```
-Dataset400
+dataset10
 ```
-The folder contains 400 shot gather. This data can not be used for a proper neural network training but can be used for the testing. 
-dataset_log_file_TD.txt - text file that contains parameters of the medium related to the shot gathers
+The folder contains 10 shot gather. This data can not be used for a proper neural network training but can be used for the testing. 
+dataset_log_file_TD.txt - text file that contains parameters of the medium related to the shot gathers:
+number rho vp vs eps gamma delta
 
 ```
 main_train.ipynb
