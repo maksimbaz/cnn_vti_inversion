@@ -1,0 +1,10 @@
+x	MSE	std_dev_abs	std_dev_rel,%	mean_difference	mean_difference_rel,%	max_difference	max_difference_rel,%
+rho,kg/m3	307.3	17.5	0.7	12.7	0.5	109.7	4.2
+vp,m/s	389.0	19.7	0.5	15.2	0.4	125.6	3.0
+vs,m/s	106.3	10.3	0.5	8.0	0.4	51.6	2.6
+eps	0.0000	0.004	1.2	0.002	0.7	0.034	11.4
+gamma	0.0000	0.002	0.7	0.001	0.4	0.029	9.0
+delta	0.0000	0.003	0.8	0.002	0.5	0.052	14.6
+
+mean train_loss for the last 10 epochs: 0.00007
+mean valid_loss for the last 10 epochs: 0.00007
