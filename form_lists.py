@@ -22,7 +22,7 @@ def create_XY_lists(dataset_ditectory, log_file_name, num_of_samples_to_read):
                 list_dataset_filepaths.append(filename_r)
     return list_dataset_filepaths, list_parameters
 
-list_dataset_filepaths, list_parameters = create_XY_lists(dataset_directory, 'dataset_log_file_TD.txt', 400)
+list_dataset_filepaths, list_parameters = create_XY_lists(dataset_directory, 'dataset_log_file_TD.txt', 10)
 
 assert len(list_dataset_filepaths) == len(list_parameters)
 

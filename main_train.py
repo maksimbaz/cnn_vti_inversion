@@ -45,7 +45,7 @@ time_full = np.fromfile (filename_r_time)
 mean_timestep = len (time_full)
 
 num_of_rec_in_group = 21
-epoch_number = 0 # the value changes during training process
+epoch_number = 0 # the value changes during training process; save the last epoch number (you'll need it for predictions)
 def read_x_data(list_dataset_filepaths):
 #     np.random.seed()
     global epoch_number, time_full, mean_timestep
@@ -176,7 +176,7 @@ with tf.device('/cpu:0'):
 
 # compile model
 batch_size=8;
-nb_epoch=250;
+nb_epoch=5;
 print('nb_epoch:', nb_epoch)
 print('steps_per_epoch:', np.ceil(datset_size/batch_size))
 print('validation_steps:', np.ceil(len(list_filepaths_valid)/batch_size))

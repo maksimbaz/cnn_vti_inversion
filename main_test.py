@@ -35,13 +35,14 @@ time_full = np.fromfile (filename_r_time)
 mean_timestep = len (time_full)
 
 num_of_rec_in_group = 21
-epoch_number = 0 # the value changes during training process
+epoch_number = 500 # the last epoch from your training process
 def read_x_data(list_dataset_filepaths):
     np.random.seed()
     global epoch_number, time_full, mean_timestep
     seismogram = np.zeros((len(list_dataset_filepaths), num_of_rec_in_group, mean_timestep))
 #     amp_map = np.zeros((num_of_rec_in_group, mean_timestep)) # amplitude map (moving average) fot noise adding
 #     N = 220 # width of the window usded for the amplitude map calculation
+#     gain = np.exp(-4e5*time_full[:]**2)*1e2/(epoch_number+1)+1
     gain = np.exp(-4e5*time_full[:]**2)*1e2/(epoch_number+1)+1
     gain /= max_seism_value
     for ifile, file_path in enumerate(list_dataset_filepaths):
@@ -152,3 +153,5 @@ ax_res[5].set(xlabel='Reference CNN output', ylabel= 'Calculated CNN output', ti
 ax_res[5].scatter(list_parameters[:,5], predictions[:,5], facecolors='none', edgecolors='b')
 ax_res[5].locator_params(nbins=6)
 plt.savefig(train_output_folder + 'predictions_all.png')
+print('\n ***---Success!---***')
+print('Please, find predictions_all.png in the train_output_folder.')
