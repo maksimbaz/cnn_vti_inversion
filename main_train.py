@@ -176,7 +176,7 @@ with tf.device('/cpu:0'):
 
 # compile model
 batch_size=8;
-nb_epoch=5;
+nb_epoch=250;
 print('nb_epoch:', nb_epoch)
 print('steps_per_epoch:', np.ceil(datset_size/batch_size))
 print('validation_steps:', np.ceil(len(list_filepaths_valid)/batch_size))
