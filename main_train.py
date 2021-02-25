@@ -44,7 +44,7 @@ filename_r_time = './dataset10/seism_time.bin' # each sample (shot gather) has t
 time_full = np.fromfile (filename_r_time)
 mean_timestep = len (time_full)
 
-num_of_rec_in_group = 21
+num_of_rec_in_group = 13
 epoch_number = 0 # the value changes during training process; save the last epoch number (you'll need it for predictions)
 def read_x_data(list_dataset_filepaths):
 #     np.random.seed()
@@ -62,7 +62,7 @@ def read_x_data(list_dataset_filepaths):
             amp_map[irec, :] = np.convolve(abs(seismogram[ifile, irec, :]), np.ones((N))/N, mode='same')
         noise = np.random.rand(num_of_rec_in_group, mean_timestep)/5-0.1
         seismogram[ifile, :, :] = seismogram[ifile, :, :] + noise*amp_map[:,:]
-        if seismogram.shape[1]*seismogram.shape[2]*8 != os.path.getsize(filename_r):
+        if (seismogram.shape[1]+8)*seismogram.shape[2]*8 != os.path.getsize(filename_r):
             print('error! smth wrong with reading')
     return seismogram.reshape(seismogram.shape[0], seismogram.shape[1],seismogram.shape[2], 1) #channels last
 
@@ -149,27 +149,30 @@ print ('y_dataset shape (batch(=1), dim[vp ,vs]):', y_dataset_example.shape)
 
 # initialize the convolutional neural network model
 with tf.device('/cpu:0'):
-    model = Sequential()
-    model.add(Conv2D(filters=50, input_shape=(21,5500,1), kernel_size=(6,6), strides=(1,1), padding='same', activation='relu'))
-    model.add(Conv2D(filters=50, kernel_size=(5,5), strides=(1,1), padding='same', activation='relu'))
-    model.add(Conv2D(filters=50, kernel_size=(5,5), strides=(1,1), padding='same', activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,1), padding='same', activation='relu'))
-    model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,2), padding='valid', activation='relu'))    
-    model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,2), padding='valid', activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='same', activation='relu'))
-    model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='valid', activation='relu'))
-    model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='valid', activation='relu'))
-    model.add(Flatten())
-    model.add( Dense(2500, activation='relu') )
-    model.add(Dropout(0.3))
-    model.add( Dense(750, activation='relu') )
-    model.add( Dense(200, activation='relu') )
-    model.add( Dense(6) )
-    model.add(Activation('linear'))
-    print('model initialized')
-    model.summary()
+        model = Sequential()
+        model.add(Conv2D(filters=50, input_shape=(13,5500,1), kernel_size=(6,6), strides=(1,1), padding='same', activation='relu'))
+        model.add(Conv2D(filters=50, kernel_size=(5,5), strides=(1,1), padding='same', activation='relu'))
+        model.add(Conv2D(filters=50, kernel_size=(5,5), strides=(1,1), padding='same', activation='relu'))
+        model.add(MaxPooling2D(pool_size=(1, 2)))
+        model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,1), padding='valid', activation='relu'))
+        model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,2), padding='valid', activation='relu'))    
+        model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,2), padding='valid', activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='same', activation='relu'))
+        model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='valid', activation='relu'))
+        model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='valid', activation='relu'))
+        model.add(Flatten())
+        model.add( Dense(2500, activation='relu') )
+        model.add(Dropout(0.3))
+        model.add( Dense(750, activation='relu') )
+        model.add( Dense(200, activation='relu') )
+        model.add( Dense(6) )
+        model.add(Activation('linear'))
+        print('model initialized')
+        with open(train_output_folder + 'model_summary.txt', 'w') as file_write_sum:
+            with redirect_stdout(file_write_sum):
+                model.summary()
+        model.summary()
 
 # or load pretrained model
 # model = load_model(train_output_folder + 'model.h5')
