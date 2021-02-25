@@ -12,7 +12,7 @@ Codes prepared for Computers and Geosciences journal
 ```
 dataset10
 ```
-The folder contains 10 shot gather. This data can not be used for a proper neural network training but can be used for the testing. 
+The folder contains 10 shot gathers. This data can not be used for a proper neural network training but can be used for the testing. 
 
 
 ```
