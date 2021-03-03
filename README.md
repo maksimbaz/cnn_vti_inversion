@@ -44,4 +44,4 @@ The script can be used to visualize shot gathers from dataset10 folder.
 ```
 train_output
 ```
-This is the folder, where you can find outputs of the `main_train.py` and `main_test.py`. 
+This is the folder, where you can find outputs of the `main_train.py` and `main_test.py`. This folder usually contains 'model.h5' - the file of the trained neural network weigths. This file is too large for uploading it, so do not hesitate to contact me if you need a sample of such a file. 
