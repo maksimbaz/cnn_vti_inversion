@@ -1,4 +1,10 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 # This script is used for the neural network construction and training.
+
+# In[ ]:
+
 
 import numpy as np
 import pickle
@@ -8,6 +14,11 @@ import time
 import matplotlib
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
+from contextlib import redirect_stdout
+
+
+# In[ ]:
+
 
 import tensorflow as tf
 import keras
@@ -17,13 +28,25 @@ from keras.utils import multi_gpu_model, plot_model
 from keras.callbacks import LambdaCallback
 from keras import regularizers, optimizers
 
+
+# In[ ]:
+
+
 train_output_folder = './train_output/'
+
+
+# In[ ]:
+
 
 # figure fonts 
 font = {'family' : 'serif',
         'weight' : 'bold',
         'size'   : 16}
 matplotlib.rc('font', **font)
+
+
+# In[ ]:
+
 
 # load lists
 with open('list_dataset_filepaths', 'rb') as fp:
@@ -34,9 +57,17 @@ with open('list_parameters', 'rb') as fp:
 with open('max_seism_value', 'rb') as fp:
     max_seism_value = pickle.load(fp) # this parameter is used for the input dataset normalization
 
+
+# In[ ]:
+
+
 datset_size = len(list_dataset_filepaths)
 assert len(list_dataset_filepaths) == len(list_parameters)
 print('datset size:', datset_size)
+
+
+# In[ ]:
+
 
 # reading block
 # function for the dataset reading from file 
@@ -45,26 +76,30 @@ time_full = np.fromfile (filename_r_time)
 mean_timestep = len (time_full)
 
 num_of_rec_in_group = 13
-epoch_number = 0 # the value changes during training process; save the last epoch number (you'll need it for predictions)
+epoch_number = 0 # the value changes during training process
 def read_x_data(list_dataset_filepaths):
 #     np.random.seed()
     global epoch_number, time_full, mean_timestep
     seismogram = np.zeros((len(list_dataset_filepaths), num_of_rec_in_group, mean_timestep))
-    amp_map = np.zeros((num_of_rec_in_group, mean_timestep)) # amplitude map (moving average) fot noise adding
-    N = 220 # width of the window usded for the amplitude map calculation
-    gain = np.exp(-4e5*time_full[:]**2)*1e2/(epoch_number+1)+1
+#     amp_map = np.zeros((num_of_rec_in_group, mean_timestep)) # amplitude map (moving average) fot noise adding
+#     N = 220 # width of the window usded for the amplitude map calculation
+    gain = np.exp(-4e5*time_full[:]**2)*1e2/(epoch_number+1)+1 #epoch_number=500 in the end of training
     gain /= max_seism_value
     for ifile, file_path in enumerate(list_dataset_filepaths):
         filename_r = file_path
         seism_read = np.fromfile(filename_r)
         for irec in range(num_of_rec_in_group):
             seismogram[ifile, irec, :] = seism_read[irec*mean_timestep:(irec+1)*mean_timestep]*gain
-            amp_map[irec, :] = np.convolve(abs(seismogram[ifile, irec, :]), np.ones((N))/N, mode='same')
-        noise = np.random.rand(num_of_rec_in_group, mean_timestep)/5-0.1
-        seismogram[ifile, :, :] = seismogram[ifile, :, :] + noise*amp_map[:,:]
+#             amp_map[irec, :] = np.convolve(abs(seismogram[ifile, irec, :]), np.ones((N))/N, mode='same')
+#         noise = np.random.rand(num_of_rec_in_group, mean_timestep)/5-0.1
+#         seismogram[ifile, :, :] = seismogram[ifile, :, :] + noise*amp_map[:,:]
         if (seismogram.shape[1]+8)*seismogram.shape[2]*8 != os.path.getsize(filename_r):
             print('error! smth wrong with reading')
     return seismogram.reshape(seismogram.shape[0], seismogram.shape[1],seismogram.shape[2], 1) #channels last
+
+
+# In[ ]:
+
 
 # funtion used for the Keras fit_generator
 def dataset_loader(list_dataset_filepaths, list_parameters, batch_size):
@@ -80,6 +115,10 @@ def dataset_loader(list_dataset_filepaths, list_parameters, batch_size):
             batch_start += batch_size
             batch_end += batch_size
             yield (x_dataset, y_dataset) #a tuple with two numpy arrays with batch_size samples
+
+
+# In[ ]:
+
 
 # output array (desired parameters) has to be normalized
 def normalize_list_parameters(list_parameters):
@@ -115,6 +154,10 @@ def normalize_list_parameters(list_parameters):
         list_parameters_normalized.append( [ list_parameters_numpy[i,0], list_parameters_numpy[i,1], list_parameters_numpy[i,2], list_parameters_numpy[i,3], list_parameters_numpy[i,4], list_parameters_numpy[i,5] ] )
     return list_parameters_normalized, rho_max, vp_max, vs_max, eps_max, gamma_max, delta_max, rho_mean, vp_mean, vs_mean, eps_mean, gamma_mean, delta_mean
 
+
+# In[ ]:
+
+
 # save normalization coefficients to the file
 # we will need when using trained neural network
 list_parameters, rho_max, vp_max, vs_max, eps_max, gamma_max, delta_max, rho_mean, vp_mean, vs_mean, eps_mean, gamma_mean, delta_mean = normalize_list_parameters(list_parameters)
@@ -135,11 +178,19 @@ with open(train_output_folder + "normalization_param_list.txt", "w") as f_write:
     for lineWrite in normalization_param_list:
         f_write.write(lineWrite)
 
+
+# In[ ]:
+
+
 # split data to train and validation subsets
 np.random.seed()
 list_filepaths_train, list_filepaths_valid, true_parameters_train, true_parameters_valid = train_test_split(list_dataset_filepaths, list_parameters, test_size=0.1)
 print('train dataset size:', len(list_filepaths_train))
 print('validation dataset size:', len(list_filepaths_valid))
+
+
+# In[ ]:
+
 
 # check shapes of the x and y dataset
 x_dataset_example = read_x_data(list_filepaths_train[9:10])
@@ -147,44 +198,59 @@ y_dataset_example = np.array(true_parameters_train[9:10])
 print ('x_dataset shape (batch(=1), num_of_rec_in_group, timesteps, channels(=1)):', x_dataset_example.shape)
 print ('y_dataset shape (batch(=1), dim[vp ,vs]):', y_dataset_example.shape)
 
-# initialize the convolutional neural network model
-with tf.device('/cpu:0'):
-        model = Sequential()
-        model.add(Conv2D(filters=50, input_shape=(13,5500,1), kernel_size=(6,6), strides=(1,1), padding='same', activation='relu'))
-        model.add(Conv2D(filters=50, kernel_size=(5,5), strides=(1,1), padding='same', activation='relu'))
-        model.add(Conv2D(filters=50, kernel_size=(5,5), strides=(1,1), padding='same', activation='relu'))
-        model.add(MaxPooling2D(pool_size=(1, 2)))
-        model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,1), padding='valid', activation='relu'))
-        model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,2), padding='valid', activation='relu'))    
-        model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,2), padding='valid', activation='relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='same', activation='relu'))
-        model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='valid', activation='relu'))
-        model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='valid', activation='relu'))
-        model.add(Flatten())
-        model.add( Dense(2500, activation='relu') )
-        model.add(Dropout(0.3))
-        model.add( Dense(750, activation='relu') )
-        model.add( Dense(200, activation='relu') )
-        model.add( Dense(6) )
-        model.add(Activation('linear'))
-        print('model initialized')
-        with open(train_output_folder + 'model_summary.txt', 'w') as file_write_sum:
-            with redirect_stdout(file_write_sum):
-                model.summary()
-        model.summary()
+
+# In[ ]:
+
+
+# with tf.device('/cpu:0'):
+#     model = Sequential()
+#     model.add(Conv2D(filters=50, input_shape=(13,5500,1), kernel_size=(6,6), strides=(1,1), padding='same', activation='relu'))
+#     model.add(Conv2D(filters=50, kernel_size=(5,5), strides=(1,1), padding='same', activation='relu'))
+#     model.add(Conv2D(filters=50, kernel_size=(5,5), strides=(1,1), padding='same', activation='relu'))
+#     model.add(MaxPooling2D(pool_size=(1, 2)))
+#     model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,1), padding='valid', activation='relu'))
+#     model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,2), padding='valid', activation='relu'))    
+#     model.add(Conv2D(filters=75, kernel_size=(3,3), strides=(1,2), padding='valid', activation='relu'))
+#     model.add(MaxPooling2D(pool_size=(2, 2)))
+#     model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='same', activation='relu'))
+#     model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='valid', activation='relu'))
+#     model.add(Conv2D(filters=100, kernel_size=(2,2), strides=(1,2), padding='valid', activation='relu'))
+#     model.add(Flatten())
+#     model.add( Dense(2500, activation='relu') )
+#     model.add(Dropout(0.3))
+#     model.add( Dense(750, activation='relu') )
+#     model.add( Dense(200, activation='relu') )
+#     model.add( Dense(6) )
+#     model.add(Activation('linear'))
+#     print('model initialized')
+#     with open(train_output_folder + 'model_summary.txt', 'w') as file_write_sum:
+#         with redirect_stdout(file_write_sum):
+#             model.summary()
+#     model.summary()
+
+
+# In[ ]:
+
 
 # or load pretrained model
-# model = load_model(train_output_folder + 'model.h5')
+model = load_model(train_output_folder + 'model.h5')
+
+
+# In[ ]:
+
 
 # compile model
-batch_size=8;
-nb_epoch=250;
+batch_size=16;
+nb_epoch=500;
 print('nb_epoch:', nb_epoch)
 print('steps_per_epoch:', np.ceil(datset_size/batch_size))
 print('validation_steps:', np.ceil(len(list_filepaths_valid)/batch_size))
 parallel_model = multi_gpu_model(model, gpus=4)
 parallel_model.compile(loss='mean_squared_error', optimizer=optimizers.Adadelta())
+
+
+# In[ ]:
+
 
 # functions which gets epoch number during training process
 def get_epoch(epoch):
@@ -192,6 +258,10 @@ def get_epoch(epoch):
     epoch_number = epoch
 
 GetEpoch_callback = LambdaCallback(on_epoch_begin=lambda epoch,logs: get_epoch(epoch))
+
+
+# In[ ]:
+
 
 # training
 start_time = time.time()
@@ -202,6 +272,10 @@ model.save(train_output_folder + 'model.h5')
 done_time = time.time()
 elapsed_time = done_time - start_time
 print('elapsed time:', elapsed_time)
+
+
+# In[ ]:
+
 
 # plot training and validation loss function values
 print(history.history.keys())
@@ -217,8 +291,16 @@ plt.legend(['train', 'validation'], loc='upper left')
 print('train_loss for the last training epoch:', history.history['loss'][-1])
 print('valid_loss for the last training epoch:', history.history['val_loss'][-1])
 
+
+# In[ ]:
+
+
 # check predictions for the validation dataset
 predictions_valid = parallel_model.predict_generator(dataset_loader(list_filepaths_valid, true_parameters_valid, batch_size), steps=np.ceil(len(list_filepaths_valid)/batch_size), verbose=1)
+
+
+# In[ ]:
+
 
 # put here normalization coefficients, if you uploaded complete model
 # rho_max=3839.0
@@ -233,6 +315,10 @@ predictions_valid = parallel_model.predict_generator(dataset_loader(list_filepat
 # eps_mean=0.30609753727912903
 # gamma_mean=0.19618447124958038
 # delta_mean=0.2660829424858093
+
+
+# In[ ]:
+
 
 # convert predictions to real values
 for i in range(len(predictions_valid)):
@@ -263,6 +349,10 @@ for i in range(len(predictions_valid)):
     true_parameters_valid[i][4] *= gamma_max
     true_parameters_valid[i][5] *= delta_max
 
+
+# In[ ]:
+
+
 # plot predictions vs true values
 true_parameters_valid = np.array(true_parameters_valid)
 predictions_valid = np.array(predictions_valid)
@@ -288,3 +378,4 @@ ax_res[5].set(xlabel='Reference CNN output', ylabel= 'Calculated CNN output', ti
 ax_res[5].scatter(true_parameters_valid[:,5], predictions_valid[:,5], facecolors='none', edgecolors='b')
 ax_res[5].locator_params(nbins=6)
 plt.savefig(train_output_folder + 'predictions_all.png')
+

@@ -1,12 +1,30 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
 import numpy as np
 import pickle
 import os
 import time
 from matplotlib import pyplot as plt
 
+
+# In[ ]:
+
+
 from keras.models import load_model
 
+
+# In[ ]:
+
+
 train_output_folder = './train_output/'
+
+
+# In[ ]:
+
 
 # fonts
 import matplotlib
@@ -14,6 +32,10 @@ font = {'family' : 'serif',
         'weight' : 'bold',
         'size'   : 16}
 matplotlib.rc('font', **font)
+
+
+# In[ ]:
+
 
 # load lists
 with open('list_dataset_filepaths', 'rb') as fp:
@@ -24,9 +46,17 @@ with open('list_parameters', 'rb') as fp:
 with open('max_seism_value', 'rb') as fp:
     max_seism_value = pickle.load(fp) # this parameter is used for the input dataset normalization
 
+
+# In[ ]:
+
+
 datset_size = len(list_dataset_filepaths)
 assert len(list_dataset_filepaths) == len(list_parameters)
 print('datset size:', datset_size)
+
+
+# In[ ]:
+
 
 #reading block
 # function for the dataset reading from file 
@@ -34,8 +64,8 @@ filename_r_time = './dataset10/seism_time.bin' # each sample (shot gather) has t
 time_full = np.fromfile (filename_r_time)
 mean_timestep = len (time_full)
 
-num_of_rec_in_group = 21
-epoch_number = 500 # the last epoch from your training process
+num_of_rec_in_group = 13
+epoch_number = 500 # the value changes during training process
 def read_x_data(list_dataset_filepaths):
     np.random.seed()
     global epoch_number, time_full, mean_timestep
@@ -53,9 +83,13 @@ def read_x_data(list_dataset_filepaths):
 #             amp_map[irec, :] = np.convolve(abs(seismogram[ifile, irec, :]), np.ones((N))/N, mode='same')
 #         noise = np.random.rand(num_of_rec_in_group, mean_timestep)/5-0.1
 #         seismogram[ifile, :, :] = seismogram[ifile, :, :] + noise*amp_map[:,:]
-        if seismogram.shape[1]*seismogram.shape[2]*8 != os.path.getsize(filename_r):
+        if (seismogram.shape[1]+8)*seismogram.shape[2]*8 != os.path.getsize(filename_r):
             print('error! smth wrong with reading')
     return seismogram.reshape(seismogram.shape[0], seismogram.shape[1],seismogram.shape[2], 1) #channels last
+
+
+# In[ ]:
+
 
 # funtion used for the Keras fit_generator
 def dataset_loader(list_dataset_filepaths, list_parameters, batch_size):
@@ -72,6 +106,10 @@ def dataset_loader(list_dataset_filepaths, list_parameters, batch_size):
             batch_end += batch_size
             yield (x_dataset, y_dataset) #a tuple with two numpy arrays with batch_size samples
 
+
+# In[ ]:
+
+
 # check shapes of the x and y dataset
 # y dataset is needed here only for checking
 x_dataset_example = read_x_data(list_dataset_filepaths[9:10])
@@ -79,11 +117,23 @@ y_dataset_example = np.array(list_parameters[9:10])
 print ('x_dataset shape (batch(=1), num_of_rec_in_group, timesteps, channels(=1)):', x_dataset_example.shape)
 print ('y_dataset shape (batch(=1), dim[vp ,vs]):', y_dataset_example.shape)
 
+
+# In[ ]:
+
+
 model = load_model(train_output_folder + 'model.h5')
 model.summary()
 
-batch_size = 8
+
+# In[ ]:
+
+
+batch_size = 16
 predictions = model.predict_generator(dataset_loader(list_dataset_filepaths, list_parameters, batch_size), steps=np.ceil(len(list_dataset_filepaths)/batch_size), verbose=1)
+
+
+# In[ ]:
+
 
 # from normalization_param_list.txt
 rho_max=3839.0
@@ -98,6 +148,10 @@ vs_mean=0.7519354820251465
 eps_mean=0.30609753727912903
 gamma_mean=0.19618447124958038
 delta_mean=0.2660829424858093
+
+
+# In[ ]:
+
 
 # convert predictions to real values
 # take these coef from normilize_log_file.ipynb
@@ -117,10 +171,18 @@ for i in range(len(predictions)):
     predictions[i][4] *= gamma_max
     predictions[i][5] *= delta_max
 
+
+# In[ ]:
+
+
 # print('pred:', predictions[0])
 # print('true:', list_parameters[0])
 list_parameters = np.array(list_parameters)
 predictions = np.array(predictions)
+
+
+# In[ ]:
+
 
 # def find_bad_points(arr1, arr2):
 #     arr_bad = abs(arr1-arr2)/arr2
@@ -130,6 +192,10 @@ predictions = np.array(predictions)
 
 # bad_eps_idx = find_bad_points(list_parameters[:,3], predictions[:,3])
 # print(len(bad_eps_idx[0]))
+
+
+# In[ ]:
+
 
 #one_png
 fig_res, ax_res = plt.subplots(6,1)
@@ -152,6 +218,11 @@ ax_res[4].locator_params(nbins=6)
 ax_res[5].set(xlabel='Reference CNN output', ylabel= 'Calculated CNN output', title=r'$\delta$')
 ax_res[5].scatter(list_parameters[:,5], predictions[:,5], facecolors='none', edgecolors='b')
 ax_res[5].locator_params(nbins=6)
-plt.savefig(train_output_folder + 'predictions_all.png')
-print('\n ***---Success!---***')
-print('Please, find predictions_all.png in the train_output_folder.')
+
+# ax_res[0].scatter(list_parameters[bad_eps_idx,0], predictions[bad_eps_idx,0], facecolors='r', edgecolors='r')
+# ax_res[1].scatter(list_parameters[bad_eps_idx,1], predictions[bad_eps_idx,1], facecolors='r', edgecolors='r')
+# ax_res[2].scatter(list_parameters[bad_eps_idx,2], predictions[bad_eps_idx,2], facecolors='r', edgecolors='r')
+# ax_res[3].scatter(list_parameters[bad_eps_idx,3], predictions[bad_eps_idx,3], facecolors='r', edgecolors='r')
+# ax_res[4].scatter(list_parameters[bad_eps_idx,4], predictions[bad_eps_idx,4], facecolors='r', edgecolors='r')
+# ax_res[5].scatter(list_parameters[bad_eps_idx,5], predictions[bad_eps_idx,5], facecolors='r', edgecolors='r')
+
