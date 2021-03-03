@@ -26,7 +26,7 @@ list_dataset_filepaths, list_parameters = create_XY_lists(dataset_directory, 'da
 
 assert len(list_dataset_filepaths) == len(list_parameters)
 
-num_of_rec = 21
+num_of_rec = 13
 
 filename_r_time = dataset_directory + 'seism_time.bin'
 time_full = np.fromfile (filename_r_time)
